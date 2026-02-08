@@ -554,7 +554,7 @@ function renderAlarmEdit() {
         {id:'barcode',icon:'📸',bg:'rgba(255,159,10,.12)',name:'Scan Barcode',desc:'Walk to your bathroom. Scan your toothpaste.'},
         {id:'math',icon:'🧮',bg:'rgba(48,209,88,.12)',name:'Math Problems',desc:'Solve 5 equations. Wake your brain up.'},
         {id:'pushups',icon:'💪',bg:'rgba(255,45,85,.12)',name:'20 Pushups',desc:'Start the day with action.'},
-      ].map(c => `<div class="cop ${a.challenge===c.id?'sel':''}" onclick="${locked?'':'aeSetChallenge(\\''+c.id+'\\')'}"">
+      ].map(c => `<div class="cop ${a.challenge===c.id?'sel':''}" onclick="${locked?'':`aeSetChallenge('${c.id}')`}">
         <div class="ci" style="background:${c.bg}">${c.icon}</div>
         <div class="cn"><h4>${c.name}</h4><p>${c.desc}</p></div>
       </div>`).join('')}
@@ -563,7 +563,7 @@ function renderAlarmEdit() {
     <div class="gc" style="padding:6px 20px;margin-bottom:24px">
       ${S.protocolTasks.map(t => `<div class="ptr">
         <div><h4>${t.icon} ${t.name}</h4><p>${t.timer?Math.floor(t.timer/60)+' min — ':''} +${t.xp} XP</p></div>
-        <div class="tog ${t.enabled?'on':''}" onclick="${locked?'':'aeToggleProtocol(\\''+t.id+'\\')'}""></div>
+        <div class="tog ${t.enabled?'on':''}" onclick="${locked?'':`aeToggleProtocol('${t.id}')`}"></div>
       </div>`).join('')}
     </div>
     <button class="btn-r btn-w" onclick="saveAlarm()" ${locked?'disabled':''}>${isNew?'Create Alarm':'Save Changes'}</button>
