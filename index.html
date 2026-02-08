@@ -1,0 +1,1996 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>RISE — Discipline Has a Price</title>
+    <meta name="apple-mobile-web-app-title" content="RISE">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="apple-touch-icon.png">
+    <meta name="theme-color" content="#000000">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #000000;
+            --bg-secondary: #0D0D0D;
+            --bg-card: rgba(255,255,255,0.04);
+            --bg-card-hover: rgba(255,255,255,0.07);
+            --glass-border: rgba(255,255,255,0.08);
+            --glass-blur: 20px;
+            --text-primary: #FFFFFF;
+            --text-secondary: rgba(255,255,255,0.55);
+            --text-tertiary: rgba(255,255,255,0.35);
+            --accent-red: #FF2D55;
+            --accent-green: #30D158;
+            --accent-gold: #FFD60A;
+            --accent-blue: #0A84FF;
+            --accent-orange: #FF9F0A;
+            --rank-gradient: linear-gradient(135deg, #FFD60A, #FF9F0A);
+            --penalty-gradient: linear-gradient(135deg, #FF2D55, #FF6B6B);
+            --success-gradient: linear-gradient(135deg, #30D158, #34E89E);
+            --safe-top: env(safe-area-inset-top, 47px);
+            --safe-bottom: env(safe-area-inset-bottom, 34px);
+            --tab-height: 82px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'SF Pro Display', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow: hidden;
+            height: 100dvh;
+            width: 100vw;
+            position: fixed;
+            top: 0;
+            left: 0;
+        }
+
+        /* ─── App Shell ─── */
+        .app-shell {
+            width: 100%;
+            height: 100%;
+            max-width: 430px;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+            background: var(--bg-primary);
+        }
+
+        /* ─── Status Bar ─── */
+        .status-bar {
+            height: 54px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            padding: 0 24px 8px;
+            font-size: 14px;
+            font-weight: 600;
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 430px;
+            z-index: 1000;
+            background: linear-gradient(to bottom, var(--bg-primary) 60%, transparent);
+        }
+
+        .status-bar .time { font-size: 15px; font-weight: 700; }
+        .status-bar .right-icons { display: flex; gap: 6px; align-items: center; font-size: 13px; }
+
+        /* ─── Screens ─── */
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            padding: 54px 0 var(--tab-height);
+            overflow-y: auto;
+            overflow-x: hidden;
+            opacity: 0;
+            transform: translateX(20px);
+            transition: all 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            pointer-events: none;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .screen.active {
+            opacity: 1;
+            transform: translateX(0);
+            pointer-events: all;
+        }
+
+        .screen-content {
+            padding: 16px 20px 40px;
+        }
+
+        /* ─── Tab Bar ─── */
+        .tab-bar {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 430px;
+            height: var(--tab-height);
+            background: rgba(13,13,13,0.85);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-top: 1px solid var(--glass-border);
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-around;
+            padding-top: 10px;
+            z-index: 999;
+        }
+
+        .tab-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 3px;
+            background: none;
+            border: none;
+            color: var(--text-tertiary);
+            font-size: 10px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: color 0.2s;
+            padding: 4px 16px;
+            letter-spacing: 0.02em;
+        }
+
+        .tab-item i { font-size: 24px; transition: all 0.2s; }
+        .tab-item.active { color: var(--text-primary); }
+        .tab-item.active i { transform: scale(1.05); }
+
+        /* ─── Glass Card ─── */
+        .glass-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(var(--glass-blur));
+            -webkit-backdrop-filter: blur(var(--glass-blur));
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 14px;
+            transition: background 0.2s;
+        }
+
+        .glass-card:active { background: var(--bg-card-hover); }
+
+        /* ─── Section Headers ─── */
+        .section-header {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 12px;
+            margin-top: 8px;
+        }
+
+        /* ─── Discipline Score Ring ─── */
+        .score-ring-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 0 6px;
+        }
+
+        .score-ring {
+            position: relative;
+            width: 180px;
+            height: 180px;
+        }
+
+        .score-ring svg {
+            width: 100%;
+            height: 100%;
+            transform: rotate(-90deg);
+        }
+
+        .score-ring .track {
+            fill: none;
+            stroke: rgba(255,255,255,0.06);
+            stroke-width: 10;
+        }
+
+        .score-ring .progress {
+            fill: none;
+            stroke: url(#scoreGradient);
+            stroke-width: 10;
+            stroke-linecap: round;
+            stroke-dasharray: 502;
+            stroke-dashoffset: 502;
+            transition: stroke-dashoffset 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .score-value {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .score-value .number {
+            font-size: 56px;
+            font-weight: 900;
+            line-height: 1;
+            letter-spacing: -2px;
+        }
+
+        .score-value .label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-top: 4px;
+        }
+
+        /* ─── Stat Chips ─── */
+        .stat-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .stat-chip {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .stat-chip .stat-icon {
+            font-size: 22px;
+            line-height: 1;
+        }
+
+        .stat-chip .stat-number {
+            font-size: 28px;
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -1px;
+        }
+
+        .stat-chip .stat-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-secondary);
+        }
+
+        /* ─── Alarm Card ─── */
+        .alarm-card {
+            background: linear-gradient(135deg, rgba(255,45,85,0.12), rgba(255,45,85,0.04));
+            border: 1px solid rgba(255,45,85,0.2);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 14px;
+        }
+
+        .alarm-time {
+            font-size: 42px;
+            font-weight: 900;
+            letter-spacing: -2px;
+            line-height: 1;
+        }
+
+        .alarm-meta {
+            display: flex;
+            gap: 12px;
+            margin-top: 10px;
+        }
+
+        .alarm-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            background: rgba(255,255,255,0.06);
+            padding: 5px 10px;
+            border-radius: 8px;
+        }
+
+        .alarm-tag.penalty { color: var(--accent-red); background: rgba(255,45,85,0.1); }
+        .alarm-tag.challenge { color: var(--accent-blue); background: rgba(10,132,255,0.1); }
+
+        /* ─── Rank Badge ─── */
+        .rank-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, rgba(255,214,10,0.15), rgba(255,159,10,0.08));
+            border: 1px solid rgba(255,214,10,0.25);
+            padding: 6px 14px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--accent-gold);
+        }
+
+        .rank-badge i { font-size: 14px; }
+
+        /* ─── XP Progress Bar ─── */
+        .xp-bar-container {
+            margin-top: 12px;
+        }
+
+        .xp-bar-label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+            font-weight: 600;
+        }
+
+        .xp-bar {
+            height: 6px;
+            background: rgba(255,255,255,0.06);
+            border-radius: 3px;
+            overflow: hidden;
+        }
+
+        .xp-bar-fill {
+            height: 100%;
+            background: var(--rank-gradient);
+            border-radius: 3px;
+            width: 0%;
+            transition: width 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* ─── Protocol Items ─── */
+        .protocol-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 15px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            cursor: pointer;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .protocol-item:last-child { border-bottom: none; }
+
+        .protocol-check {
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: all 0.3s;
+        }
+
+        .protocol-check i {
+            font-size: 13px;
+            opacity: 0;
+            transform: scale(0);
+            transition: all 0.3s;
+        }
+
+        .protocol-item.completed .protocol-check {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+        }
+
+        .protocol-item.completed .protocol-check i {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .protocol-item.completed .protocol-text { 
+            color: var(--text-secondary);
+            text-decoration: line-through;
+            text-decoration-color: rgba(255,255,255,0.15);
+        }
+
+        .protocol-text {
+            font-size: 15px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .protocol-xp {
+            margin-left: auto;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--accent-gold);
+            opacity: 0.7;
+        }
+
+        /* ─── Greeting ─── */
+        .greeting {
+            margin-bottom: 20px;
+        }
+
+        .greeting h1 {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            line-height: 1.2;
+        }
+
+        .greeting p {
+            font-size: 15px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            font-weight: 500;
+        }
+
+        /* ─── ALARM SETUP SCREEN ─── */
+        .time-display {
+            text-align: center;
+            padding: 30px 0;
+        }
+
+        .time-display .big-time {
+            font-size: 72px;
+            font-weight: 900;
+            letter-spacing: -4px;
+            line-height: 1;
+        }
+
+        .time-display .period {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin-left: 4px;
+        }
+
+        .time-display .wake-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            margin-top: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+        }
+
+        /* Time Adjuster */
+        .time-adjuster {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin: 10px 0 20px;
+        }
+
+        .time-btn {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            border: 1px solid var(--glass-border);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .time-btn:active { background: var(--bg-card-hover); transform: scale(0.92); }
+
+        /* Penalty Selector */
+        .penalty-options {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .penalty-option {
+            background: var(--bg-card);
+            border: 2px solid var(--glass-border);
+            border-radius: 14px;
+            padding: 14px 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        .penalty-option .amount {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .penalty-option .per {
+            font-size: 10px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            margin-top: 2px;
+        }
+
+        .penalty-option.selected {
+            border-color: var(--accent-red);
+            background: rgba(255,45,85,0.1);
+        }
+
+        .penalty-option.selected .amount { color: var(--accent-red); }
+
+        /* Challenge Selector */
+        .challenge-options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .challenge-option {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            background: var(--bg-card);
+            border: 2px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        .challenge-option.selected {
+            border-color: var(--accent-blue);
+            background: rgba(10,132,255,0.08);
+        }
+
+        .challenge-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .challenge-option .challenge-info h4 {
+            font-size: 15px;
+            font-weight: 700;
+        }
+
+        .challenge-option .challenge-info p {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+
+        /* Set Alarm Button */
+        .btn-rise {
+            width: 100%;
+            padding: 18px;
+            border-radius: 16px;
+            border: none;
+            font-size: 17px;
+            font-weight: 800;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-rise:active { transform: scale(0.97); }
+
+        .btn-rise-primary {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+        }
+
+        .btn-rise-danger {
+            background: var(--penalty-gradient);
+            color: white;
+        }
+
+        /* ─── LEADERBOARD ─── */
+        .lb-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .lb-tab {
+            padding: 8px 18px;
+            border-radius: 20px;
+            border: none;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: var(--bg-card);
+            color: var(--text-secondary);
+        }
+
+        .lb-tab.active {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+        }
+
+        .lb-entry {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            margin-bottom: 10px;
+            transition: all 0.2s;
+        }
+
+        .lb-entry:active { background: var(--bg-card-hover); }
+        .lb-entry.you { border-color: rgba(255,214,10,0.3); background: rgba(255,214,10,0.04); }
+
+        .lb-rank {
+            font-size: 18px;
+            font-weight: 900;
+            width: 32px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .lb-rank.gold { color: #FFD60A; }
+        .lb-rank.silver { color: #C0C0C0; }
+        .lb-rank.bronze { color: #CD7F32; }
+
+        .lb-avatar {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.03));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .lb-info { flex: 1; }
+        .lb-info .name { font-size: 15px; font-weight: 700; }
+        .lb-info .streak { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+
+        .lb-score {
+            text-align: right;
+        }
+
+        .lb-score .score { font-size: 20px; font-weight: 800; }
+        .lb-score .unit { font-size: 11px; color: var(--text-secondary); font-weight: 600; }
+
+        /* ─── PROFILE SCREEN ─── */
+        .profile-header {
+            text-align: center;
+            padding: 20px 0 10px;
+        }
+
+        .profile-avatar {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FFD60A, #FF9F0A);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 38px;
+            margin: 0 auto 14px;
+            box-shadow: 0 0 40px rgba(255,214,10,0.15);
+        }
+
+        .profile-name {
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        .profile-handle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1px;
+            background: var(--glass-border);
+            border-radius: 16px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .profile-stat {
+            background: var(--bg-card);
+            padding: 18px 10px;
+            text-align: center;
+        }
+
+        .profile-stat .val {
+            font-size: 24px;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .profile-stat .lbl {
+            font-size: 11px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Achievements */
+        .achievement-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .achievement {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 12px 4px;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+        }
+
+        .achievement.locked { opacity: 0.35; }
+
+        .achievement-icon {
+            font-size: 28px;
+            line-height: 1;
+        }
+
+        .achievement-name {
+            font-size: 9px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-align: center;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            line-height: 1.2;
+        }
+
+        /* Settings Row */
+        .settings-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            margin-bottom: 8px;
+            cursor: pointer;
+        }
+
+        .settings-row:active { background: var(--bg-card-hover); }
+
+        .settings-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .settings-left i { font-size: 20px; color: var(--text-secondary); }
+        .settings-left span { font-size: 15px; font-weight: 600; }
+
+        .settings-row .bi-chevron-right { color: var(--text-tertiary); font-size: 16px; }
+
+        /* ─── Toggle Switch ─── */
+        .toggle-switch {
+            width: 52px;
+            height: 32px;
+            border-radius: 16px;
+            background: rgba(255,255,255,0.15);
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s;
+            flex-shrink: 0;
+        }
+
+        .toggle-switch.active { background: var(--accent-green); }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: white;
+            top: 3px;
+            left: 3px;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+        }
+
+        .toggle-switch.active::after { transform: translateX(20px); }
+
+        /* ─── Onboarding ─── */
+        .onboarding-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px 30px;
+            transition: opacity 0.6s, transform 0.6s;
+        }
+
+        .onboarding-screen.hidden {
+            opacity: 0;
+            transform: scale(1.05);
+            pointer-events: none;
+        }
+
+        .onboarding-logo {
+            font-size: 72px;
+            font-weight: 900;
+            letter-spacing: -4px;
+            margin-bottom: 12px;
+            background: linear-gradient(135deg, #FFFFFF, rgba(255,255,255,0.7));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .onboarding-tagline {
+            font-size: 16px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            margin-bottom: 60px;
+        }
+
+        .onboarding-subtitle {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            line-height: 1.3;
+        }
+
+        .onboarding-desc {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 50px;
+            max-width: 320px;
+        }
+
+        .btn-onboard {
+            width: 100%;
+            max-width: 340px;
+            padding: 18px;
+            border-radius: 16px;
+            border: none;
+            font-size: 17px;
+            font-weight: 800;
+            cursor: pointer;
+            background: white;
+            color: black;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            transition: all 0.2s;
+        }
+
+        .btn-onboard:active { transform: scale(0.97); opacity: 0.9; }
+
+        .onboarding-skip {
+            margin-top: 16px;
+            font-size: 14px;
+            color: var(--text-tertiary);
+            font-weight: 600;
+            cursor: pointer;
+            background: none;
+            border: none;
+        }
+
+        /* ─── War Mode Banner ─── */
+        .war-banner {
+            background: linear-gradient(135deg, rgba(255,159,10,0.12), rgba(255,45,85,0.08));
+            border: 1px solid rgba(255,159,10,0.2);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .war-banner:active { transform: scale(0.98); }
+
+        .war-banner h3 {
+            font-size: 17px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .war-banner p {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-top: 4px;
+            line-height: 1.4;
+        }
+
+        /* ─── Active Alarm Overlay ─── */
+        .alarm-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg-primary);
+            z-index: 3000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 40px;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.4s;
+        }
+
+        .alarm-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .alarm-pulse {
+            width: 140px;
+            height: 140px;
+            border-radius: 50%;
+            background: rgba(255,45,85,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,45,85,0.3); }
+            50% { transform: scale(1.05); box-shadow: 0 0 40px 20px rgba(255,45,85,0.1); }
+        }
+
+        .alarm-pulse i {
+            font-size: 52px;
+            color: var(--accent-red);
+        }
+
+        .alarm-overlay .big-time {
+            font-size: 64px;
+            font-weight: 900;
+            letter-spacing: -3px;
+        }
+
+        .penalty-countdown {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--accent-red);
+            margin: 20px 0;
+        }
+
+        .penalty-countdown span {
+            font-size: 36px;
+            font-weight: 900;
+        }
+
+        .alarm-actions {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            width: 100%;
+            max-width: 300px;
+            margin-top: 20px;
+        }
+
+        .btn-alarm-dismiss {
+            padding: 18px;
+            border-radius: 16px;
+            border: none;
+            font-size: 17px;
+            font-weight: 800;
+            cursor: pointer;
+            background: var(--accent-green);
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .btn-alarm-snooze {
+            padding: 16px;
+            border-radius: 16px;
+            border: 2px solid rgba(255,45,85,0.4);
+            background: rgba(255,45,85,0.1);
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            color: var(--accent-red);
+        }
+
+        /* ─── Animations ─── */
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-in {
+            animation: fadeUp 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+            opacity: 0;
+        }
+
+        .delay-1 { animation-delay: 0.1s; }
+        .delay-2 { animation-delay: 0.2s; }
+        .delay-3 { animation-delay: 0.3s; }
+        .delay-4 { animation-delay: 0.4s; }
+        .delay-5 { animation-delay: 0.5s; }
+        .delay-6 { animation-delay: 0.6s; }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { display: none; }
+
+        /* Desktop wrapper */
+        @media (min-width: 431px) {
+            body {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: #000;
+            }
+            .app-shell {
+                height: 100dvh;
+                max-height: 932px;
+                border-radius: 0;
+                box-shadow: 0 0 80px rgba(255,255,255,0.03);
+            }
+        }
+
+        /* ─── Haptic ripple ─── */
+        .ripple {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .ripple::after {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .ripple:active::after { opacity: 1; }
+
+        /* Day pills */
+        .day-pills {
+            display: flex;
+            gap: 6px;
+            margin-top: 12px;
+        }
+        
+        .day-pill {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 700;
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .day-pill.selected {
+            background: white;
+            color: black;
+            border-color: white;
+        }
+
+        /* Protocol toggle row */
+        .protocol-toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+        }
+
+        .protocol-toggle-row:last-child { border-bottom: none; }
+
+        .protocol-toggle-info h4 {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .protocol-toggle-info p {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- ONBOARDING SCREEN                       -->
+<!-- ═══════════════════════════════════════ -->
+<div class="onboarding-screen" id="onboarding">
+    <div class="onboarding-logo">RISE</div>
+    <div class="onboarding-tagline">Discipline Has a Price</div>
+    <div class="onboarding-subtitle">Stop snoozing. Start winning.</div>
+    <div class="onboarding-desc">
+        Every time you hit snooze, you pay. Every time you rise, you level up.
+        No excuses. No mercy. Just results.
+    </div>
+    <button class="btn-onboard" onclick="dismissOnboarding()">I'm Ready to Rise</button>
+    <button class="onboarding-skip" onclick="dismissOnboarding()">I don't need motivation</button>
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- APP SHELL                               -->
+<!-- ═══════════════════════════════════════ -->
+<div class="app-shell">
+
+    <!-- Status Bar -->
+    <div class="status-bar">
+        <span class="time" id="statusTime">9:41</span>
+        <span class="right-icons">
+            <i class="bi bi-reception-4"></i>
+            <i class="bi bi-wifi"></i>
+            <span>100%</span>
+            <i class="bi bi-battery-full"></i>
+        </span>
+    </div>
+
+    <!-- SVG Gradient Defs -->
+    <svg style="position:absolute;width:0;height:0">
+        <defs>
+            <linearGradient id="scoreGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" style="stop-color:#30D158"/>
+                <stop offset="50%" style="stop-color:#FFD60A"/>
+                <stop offset="100%" style="stop-color:#FF2D55"/>
+            </linearGradient>
+        </defs>
+    </svg>
+
+    <!-- ════════════════════════════════════ -->
+    <!-- SCREEN: DASHBOARD                    -->
+    <!-- ════════════════════════════════════ -->
+    <div class="screen active" id="screen-dashboard">
+        <div class="screen-content">
+            <!-- Greeting -->
+            <div class="greeting animate-in">
+                <h1>Rise and conquer.</h1>
+                <p>Day 47 of your grind — keep pushing</p>
+            </div>
+
+            <!-- Discipline Score -->
+            <div class="glass-card animate-in delay-1">
+                <div class="score-ring-container">
+                    <div class="score-ring">
+                        <svg viewBox="0 0 180 180">
+                            <circle class="track" cx="90" cy="90" r="80"/>
+                            <circle class="progress" id="scoreProgress" cx="90" cy="90" r="80"/>
+                        </svg>
+                        <div class="score-value">
+                            <div class="number" id="scoreNumber">0</div>
+                            <div class="label">Discipline</div>
+                        </div>
+                    </div>
+                    <div style="margin-top:14px">
+                        <div class="rank-badge">
+                            <i class="bi bi-shield-fill-check"></i>
+                            WARRIOR III
+                        </div>
+                    </div>
+                    <div class="xp-bar-container" style="width:100%;margin-top:14px">
+                        <div class="xp-bar-label">
+                            <span>1,247 XP</span>
+                            <span>1,500 XP to COMMANDER</span>
+                        </div>
+                        <div class="xp-bar">
+                            <div class="xp-bar-fill" id="xpFill"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stat Chips -->
+            <div class="stat-row animate-in delay-2">
+                <div class="stat-chip">
+                    <div class="stat-icon">🔥</div>
+                    <div class="stat-number" style="color:var(--accent-orange)">47</div>
+                    <div class="stat-label">Day Streak</div>
+                </div>
+                <div class="stat-chip">
+                    <div class="stat-icon">💰</div>
+                    <div class="stat-number" style="color:var(--accent-green)">$470</div>
+                    <div class="stat-label">Penalty Avoided</div>
+                </div>
+            </div>
+
+            <!-- Next Alarm -->
+            <div class="section-header animate-in delay-3">Next Alarm</div>
+            <div class="alarm-card animate-in delay-3" onclick="showAlarmOverlay()">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start">
+                    <div>
+                        <div class="alarm-time">5:30</div>
+                        <div style="font-size:14px;color:var(--text-secondary);font-weight:600;margin-top:2px">Tomorrow — Mon</div>
+                    </div>
+                    <div class="toggle-switch active" onclick="event.stopPropagation()"></div>
+                </div>
+                <div class="alarm-meta">
+                    <span class="alarm-tag penalty"><i class="bi bi-exclamation-circle-fill"></i> $10</span>
+                    <span class="alarm-tag challenge"><i class="bi bi-geo-alt-fill"></i> 50 Steps</span>
+                </div>
+            </div>
+
+            <!-- Morning Protocol -->
+            <div class="section-header animate-in delay-4">Morning Protocol</div>
+            <div class="glass-card animate-in delay-4" style="padding:6px 20px">
+                <div class="protocol-item" onclick="toggleProtocol(this)">
+                    <div class="protocol-check"><i class="bi bi-check2"></i></div>
+                    <span class="protocol-text">Cold shower — 2 min</span>
+                    <span class="protocol-xp">+15 XP</span>
+                </div>
+                <div class="protocol-item" onclick="toggleProtocol(this)">
+                    <div class="protocol-check"><i class="bi bi-check2"></i></div>
+                    <span class="protocol-text">20 pushups</span>
+                    <span class="protocol-xp">+10 XP</span>
+                </div>
+                <div class="protocol-item" onclick="toggleProtocol(this)">
+                    <div class="protocol-check"><i class="bi bi-check2"></i></div>
+                    <span class="protocol-text">5 min meditation</span>
+                    <span class="protocol-xp">+10 XP</span>
+                </div>
+                <div class="protocol-item" onclick="toggleProtocol(this)">
+                    <div class="protocol-check"><i class="bi bi-check2"></i></div>
+                    <span class="protocol-text">Journal one page</span>
+                    <span class="protocol-xp">+15 XP</span>
+                </div>
+            </div>
+
+            <!-- War Mode -->
+            <div class="war-banner animate-in delay-5" onclick="alert('War Mode coming soon — challenge a friend, loser pays the winner.')">
+                <h3>⚔️ War Mode</h3>
+                <p>Challenge a friend. Loser pays the winner. No mercy.</p>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════ -->
+    <!-- SCREEN: ALARM SETUP                  -->
+    <!-- ════════════════════════════════════ -->
+    <div class="screen" id="screen-alarm">
+        <div class="screen-content">
+            <div class="greeting">
+                <h1>Set Your Alarm</h1>
+                <p>Choose your wake-up stakes</p>
+            </div>
+
+            <!-- Time Display -->
+            <div class="time-display">
+                <span class="big-time" id="alarmTimeDisplay">5:30</span>
+                <span class="period" id="alarmPeriod">AM</span>
+                <div class="wake-label">Wake Up Time</div>
+            </div>
+
+            <div class="time-adjuster">
+                <button class="time-btn" onclick="adjustTime(-30)"><i class="bi bi-dash"></i></button>
+                <button class="time-btn" onclick="adjustTime(-5)" style="width:36px;height:36px;font-size:16px"><i class="bi bi-dash"></i></button>
+                <span style="font-size:13px;color:var(--text-tertiary);font-weight:600;padding:0 8px">ADJUST</span>
+                <button class="time-btn" onclick="adjustTime(5)" style="width:36px;height:36px;font-size:16px"><i class="bi bi-plus"></i></button>
+                <button class="time-btn" onclick="adjustTime(30)"><i class="bi bi-plus"></i></button>
+            </div>
+
+            <!-- Repeat Days -->
+            <div class="section-header">Repeat</div>
+            <div class="day-pills" style="margin-bottom:20px">
+                <div class="day-pill selected" onclick="this.classList.toggle('selected')">M</div>
+                <div class="day-pill selected" onclick="this.classList.toggle('selected')">T</div>
+                <div class="day-pill selected" onclick="this.classList.toggle('selected')">W</div>
+                <div class="day-pill selected" onclick="this.classList.toggle('selected')">T</div>
+                <div class="day-pill selected" onclick="this.classList.toggle('selected')">F</div>
+                <div class="day-pill" onclick="this.classList.toggle('selected')">S</div>
+                <div class="day-pill" onclick="this.classList.toggle('selected')">S</div>
+            </div>
+
+            <!-- Penalty Amount -->
+            <div class="section-header">Snooze Penalty</div>
+            <div class="penalty-options" style="margin-bottom:24px">
+                <div class="penalty-option" onclick="selectPenalty(this, 5)">
+                    <div class="amount">$5</div>
+                    <div class="per">per snooze</div>
+                </div>
+                <div class="penalty-option selected" onclick="selectPenalty(this, 10)">
+                    <div class="amount">$10</div>
+                    <div class="per">per snooze</div>
+                </div>
+                <div class="penalty-option" onclick="selectPenalty(this, 25)">
+                    <div class="amount">$25</div>
+                    <div class="per">per snooze</div>
+                </div>
+                <div class="penalty-option" onclick="selectPenalty(this, 50)">
+                    <div class="amount">$50</div>
+                    <div class="per">hard mode</div>
+                </div>
+            </div>
+
+            <!-- Challenge Type -->
+            <div class="section-header">Wake-Up Challenge</div>
+            <div class="challenge-options" style="margin-bottom:24px">
+                <div class="challenge-option selected" onclick="selectChallenge(this)">
+                    <div class="challenge-icon" style="background:rgba(10,132,255,0.12)">🚶</div>
+                    <div class="challenge-info">
+                        <h4>Walk 50 Steps</h4>
+                        <p>Get out of bed. No exceptions.</p>
+                    </div>
+                </div>
+                <div class="challenge-option" onclick="selectChallenge(this)">
+                    <div class="challenge-icon" style="background:rgba(255,159,10,0.12)">📸</div>
+                    <div class="challenge-info">
+                        <h4>Scan Barcode</h4>
+                        <p>Walk to your bathroom. Scan your toothpaste.</p>
+                    </div>
+                </div>
+                <div class="challenge-option" onclick="selectChallenge(this)">
+                    <div class="challenge-icon" style="background:rgba(48,209,88,0.12)">🧮</div>
+                    <div class="challenge-info">
+                        <h4>Math Problems</h4>
+                        <p>Solve 5 equations. Wake your brain up.</p>
+                    </div>
+                </div>
+                <div class="challenge-option" onclick="selectChallenge(this)">
+                    <div class="challenge-icon" style="background:rgba(255,45,85,0.12)">💪</div>
+                    <div class="challenge-info">
+                        <h4>20 Pushups</h4>
+                        <p>Start the day with action. Phone on floor.</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Morning Protocol -->
+            <div class="section-header">Morning Protocol</div>
+            <div class="glass-card" style="padding:6px 20px;margin-bottom:24px">
+                <div class="protocol-toggle-row">
+                    <div class="protocol-toggle-info">
+                        <h4>🥶 Cold Shower</h4>
+                        <p>2 minutes minimum — +15 XP</p>
+                    </div>
+                    <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+                </div>
+                <div class="protocol-toggle-row">
+                    <div class="protocol-toggle-info">
+                        <h4>💪 Pushups</h4>
+                        <p>20 reps minimum — +10 XP</p>
+                    </div>
+                    <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+                </div>
+                <div class="protocol-toggle-row">
+                    <div class="protocol-toggle-info">
+                        <h4>🧘 Meditation</h4>
+                        <p>5 minutes stillness — +10 XP</p>
+                    </div>
+                    <div class="toggle-switch active" onclick="this.classList.toggle('active')"></div>
+                </div>
+                <div class="protocol-toggle-row">
+                    <div class="protocol-toggle-info">
+                        <h4>📓 Journal</h4>
+                        <p>One page of intentions — +15 XP</p>
+                    </div>
+                    <div class="toggle-switch" onclick="this.classList.toggle('active')"></div>
+                </div>
+            </div>
+
+            <button class="btn-rise btn-rise-primary" onclick="saveAlarm()">Lock In Alarm</button>
+            <div style="text-align:center;margin-top:12px;font-size:12px;color:var(--text-tertiary);font-weight:600">
+                Once locked, you can't edit within 1 hour of alarm time
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════ -->
+    <!-- SCREEN: LEADERBOARD                  -->
+    <!-- ════════════════════════════════════ -->
+    <div class="screen" id="screen-leaderboard">
+        <div class="screen-content">
+            <div class="greeting">
+                <h1>Leaderboard</h1>
+                <p>Outgrind everyone. No days off.</p>
+            </div>
+
+            <div class="lb-tabs">
+                <button class="lb-tab active" onclick="selectLbTab(this)">Global</button>
+                <button class="lb-tab" onclick="selectLbTab(this)">Friends</button>
+                <button class="lb-tab" onclick="selectLbTab(this)">This Week</button>
+            </div>
+
+            <!-- Entries -->
+            <div class="lb-entry animate-in delay-1">
+                <div class="lb-rank gold">1</div>
+                <div class="lb-avatar">🦁</div>
+                <div class="lb-info">
+                    <div class="name">DisciplineKing</div>
+                    <div class="streak">🔥 312 day streak · APEX</div>
+                </div>
+                <div class="lb-score">
+                    <div class="score">98</div>
+                    <div class="unit">DISC.</div>
+                </div>
+            </div>
+
+            <div class="lb-entry animate-in delay-2">
+                <div class="lb-rank silver">2</div>
+                <div class="lb-avatar">🐺</div>
+                <div class="lb-info">
+                    <div class="name">IronMindset</div>
+                    <div class="streak">🔥 198 day streak · TITAN</div>
+                </div>
+                <div class="lb-score">
+                    <div class="score">96</div>
+                    <div class="unit">DISC.</div>
+                </div>
+            </div>
+
+            <div class="lb-entry animate-in delay-3">
+                <div class="lb-rank bronze">3</div>
+                <div class="lb-avatar">🦅</div>
+                <div class="lb-info">
+                    <div class="name">GrindNeverStops</div>
+                    <div class="streak">🔥 156 day streak · TITAN</div>
+                </div>
+                <div class="lb-score">
+                    <div class="score">94</div>
+                    <div class="unit">DISC.</div>
+                </div>
+            </div>
+
+            <div class="lb-entry">
+                <div class="lb-rank">4</div>
+                <div class="lb-avatar">🐻</div>
+                <div class="lb-info">
+                    <div class="name">AlphaProtocol</div>
+                    <div class="streak">🔥 134 day streak · IRON</div>
+                </div>
+                <div class="lb-score">
+                    <div class="score">91</div>
+                    <div class="unit">DISC.</div>
+                </div>
+            </div>
+
+            <div class="lb-entry">
+                <div class="lb-rank">5</div>
+                <div class="lb-avatar">🔥</div>
+                <div class="lb-info">
+                    <div class="name">NoMercyMike</div>
+                    <div class="streak">🔥 89 day streak · IRON</div>
+                </div>
+                <div class="lb-score">
+                    <div class="score">90</div>
+                    <div class="unit">DISC.</div>
+                </div>
+            </div>
+
+            <!-- You -->
+            <div style="text-align:center;padding:8px;font-size:11px;color:var(--text-tertiary);font-weight:600;letter-spacing:0.1em">· · · · ·</div>
+
+            <div class="lb-entry you">
+                <div class="lb-rank" style="color:var(--accent-gold)">23</div>
+                <div class="lb-avatar" style="background:linear-gradient(135deg,rgba(255,214,10,0.2),rgba(255,159,10,0.1))">⚡</div>
+                <div class="lb-info">
+                    <div class="name">You</div>
+                    <div class="streak">🔥 47 day streak · WARRIOR III</div>
+                </div>
+                <div class="lb-score">
+                    <div class="score" style="color:var(--accent-gold)">87</div>
+                    <div class="unit">DISC.</div>
+                </div>
+            </div>
+
+            <div class="lb-entry">
+                <div class="lb-rank">24</div>
+                <div class="lb-avatar">💎</div>
+                <div class="lb-info">
+                    <div class="name">ColdShowerKid</div>
+                    <div class="streak">🔥 45 day streak · WARRIOR II</div>
+                </div>
+                <div class="lb-score">
+                    <div class="score">86</div>
+                    <div class="unit">DISC.</div>
+                </div>
+            </div>
+
+            <div class="lb-entry">
+                <div class="lb-rank">25</div>
+                <div class="lb-avatar">🏔️</div>
+                <div class="lb-info">
+                    <div class="name">SummitChaser</div>
+                    <div class="streak">🔥 41 day streak · WARRIOR II</div>
+                </div>
+                <div class="lb-score">
+                    <div class="score">85</div>
+                    <div class="unit">DISC.</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════ -->
+    <!-- SCREEN: PROFILE                      -->
+    <!-- ════════════════════════════════════ -->
+    <div class="screen" id="screen-profile">
+        <div class="screen-content">
+            <div class="profile-header">
+                <div class="profile-avatar">⚡</div>
+                <div class="profile-name">Jackson</div>
+                <div class="profile-handle">@jackson_rises</div>
+                <div style="margin-top:12px">
+                    <div class="rank-badge">
+                        <i class="bi bi-shield-fill-check"></i>
+                        WARRIOR III — 1,247 XP
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-stats">
+                <div class="profile-stat">
+                    <div class="val" style="color:var(--accent-orange)">47</div>
+                    <div class="lbl">Streak</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="val" style="color:var(--accent-green)">$470</div>
+                    <div class="lbl">Saved</div>
+                </div>
+                <div class="profile-stat">
+                    <div class="val">#23</div>
+                    <div class="lbl">Rank</div>
+                </div>
+            </div>
+
+            <!-- Rank Progression -->
+            <div class="section-header">Rank Progression</div>
+            <div class="glass-card">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+                    <span style="font-size:14px;font-weight:700">WARRIOR III</span>
+                    <span style="font-size:13px;color:var(--text-secondary);font-weight:600">→ COMMANDER</span>
+                </div>
+                <div class="xp-bar" style="height:8px">
+                    <div class="xp-bar-fill" id="profileXpFill" style="border-radius:4px"></div>
+                </div>
+                <div style="display:flex;justify-content:space-between;margin-top:8px;font-size:11px;color:var(--text-tertiary);font-weight:600">
+                    <span>1,247 / 1,500 XP</span>
+                    <span>253 XP to go</span>
+                </div>
+                <div style="margin-top:16px;font-size:12px;color:var(--text-secondary);line-height:1.6">
+                    <div style="display:flex;justify-content:space-between;padding:4px 0">
+                        <span>RECRUIT</span><span style="color:var(--text-tertiary)">0 XP</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:4px 0">
+                        <span>SOLDIER</span><span style="color:var(--text-tertiary)">100 XP</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:4px 0">
+                        <span>WARRIOR</span><span style="color:var(--text-tertiary)">500 XP</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:4px 0;color:var(--accent-gold);font-weight:700">
+                        <span>COMMANDER</span><span>1,500 XP</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:4px 0">
+                        <span>IRON</span><span style="color:var(--text-tertiary)">3,500 XP</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:4px 0">
+                        <span>TITAN</span><span style="color:var(--text-tertiary)">7,000 XP</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;padding:4px 0">
+                        <span>APEX</span><span style="color:var(--text-tertiary)">15,000 XP</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Achievements -->
+            <div class="section-header">Achievements</div>
+            <div class="achievement-grid" style="margin-bottom:20px">
+                <div class="achievement">
+                    <div class="achievement-icon">🌅</div>
+                    <div class="achievement-name">Early Bird</div>
+                </div>
+                <div class="achievement">
+                    <div class="achievement-icon">🔥</div>
+                    <div class="achievement-name">7 Day Streak</div>
+                </div>
+                <div class="achievement">
+                    <div class="achievement-icon">🥶</div>
+                    <div class="achievement-name">Ice Veins</div>
+                </div>
+                <div class="achievement">
+                    <div class="achievement-icon">💪</div>
+                    <div class="achievement-name">Iron Body</div>
+                </div>
+                <div class="achievement">
+                    <div class="achievement-icon">🧠</div>
+                    <div class="achievement-name">Mind Over Bed</div>
+                </div>
+                <div class="achievement">
+                    <div class="achievement-icon">💰</div>
+                    <div class="achievement-name">$100 Saved</div>
+                </div>
+                <div class="achievement locked">
+                    <div class="achievement-icon">🏆</div>
+                    <div class="achievement-name">30 Day King</div>
+                </div>
+                <div class="achievement locked">
+                    <div class="achievement-icon">⚡</div>
+                    <div class="achievement-name">APEX Status</div>
+                </div>
+            </div>
+
+            <!-- Settings -->
+            <div class="section-header">Settings</div>
+            <div class="settings-row">
+                <div class="settings-left">
+                    <i class="bi bi-bell-fill"></i>
+                    <span>Notifications</span>
+                </div>
+                <i class="bi bi-chevron-right"></i>
+            </div>
+            <div class="settings-row">
+                <div class="settings-left">
+                    <i class="bi bi-creditcard-fill"></i>
+                    <span>Payment Method</span>
+                </div>
+                <i class="bi bi-chevron-right"></i>
+            </div>
+            <div class="settings-row">
+                <div class="settings-left">
+                    <i class="bi bi-people-fill"></i>
+                    <span>Invite Friends</span>
+                </div>
+                <i class="bi bi-chevron-right"></i>
+            </div>
+            <div class="settings-row">
+                <div class="settings-left">
+                    <i class="bi bi-shield-lock-fill"></i>
+                    <span>Anti-Cheat Protection</span>
+                </div>
+                <div class="toggle-switch active" onclick="event.stopPropagation();this.classList.toggle('active')"></div>
+            </div>
+            <div class="settings-row" style="margin-bottom:30px">
+                <div class="settings-left">
+                    <i class="bi bi-crown-fill" style="color:var(--accent-gold)"></i>
+                    <span>RISE Premium</span>
+                </div>
+                <span style="font-size:12px;font-weight:700;color:var(--accent-gold)">UPGRADE</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- ════════════════════════════════════ -->
+    <!-- TAB BAR                              -->
+    <!-- ════════════════════════════════════ -->
+    <nav class="tab-bar">
+        <button class="tab-item active" onclick="switchScreen('dashboard', this)">
+            <i class="bi bi-house-fill"></i>
+            <span>Home</span>
+        </button>
+        <button class="tab-item" onclick="switchScreen('alarm', this)">
+            <i class="bi bi-alarm-fill"></i>
+            <span>Alarm</span>
+        </button>
+        <button class="tab-item" onclick="switchScreen('leaderboard', this)">
+            <i class="bi bi-trophy-fill"></i>
+            <span>Ranks</span>
+        </button>
+        <button class="tab-item" onclick="switchScreen('profile', this)">
+            <i class="bi bi-person-fill"></i>
+            <span>Profile</span>
+        </button>
+    </nav>
+
+</div>
+
+<!-- ═══════════════════════════════════════ -->
+<!-- ALARM OVERLAY                           -->
+<!-- ═══════════════════════════════════════ -->
+<div class="alarm-overlay" id="alarmOverlay">
+    <div class="alarm-pulse">
+        <i class="bi bi-alarm-fill"></i>
+    </div>
+    <div class="big-time">5:30 AM</div>
+    <div style="font-size:14px;color:var(--text-secondary);font-weight:600;margin-top:8px">WAKE UP — YOUR ALARM IS GOING OFF</div>
+    <div class="penalty-countdown">
+        Penalty in <span id="penaltyTimer">1:59</span>
+    </div>
+    <div style="font-size:13px;color:var(--text-tertiary);margin-bottom:10px;font-weight:600">
+        Complete your challenge to dismiss
+    </div>
+    <div style="background:var(--bg-card);border:1px solid var(--glass-border);border-radius:16px;padding:20px;width:100%;max-width:300px;text-align:center;margin-bottom:20px">
+        <div style="font-size:12px;color:var(--text-secondary);font-weight:600;text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">Challenge</div>
+        <div style="font-size:32px;font-weight:900">🚶 Walk 50 Steps</div>
+        <div style="margin-top:10px;font-size:14px;font-weight:700;color:var(--accent-blue)">
+            <span id="stepCount">0</span> / 50 steps
+        </div>
+        <div class="xp-bar" style="margin-top:10px;height:6px">
+            <div id="stepBar" style="height:100%;background:var(--accent-blue);border-radius:3px;width:0%;transition:width 0.3s"></div>
+        </div>
+    </div>
+    <div class="alarm-actions">
+        <button class="btn-alarm-dismiss" onclick="dismissAlarm()">
+            <i class="bi bi-check-circle-fill"></i> I'M UP — DISMISS
+        </button>
+        <button class="btn-alarm-snooze" onclick="snoozeAlarm()">
+            Snooze — Pay $10 Penalty
+        </button>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Register Service Worker for PWA
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+</script>
+<script>
+    // ─── Status Bar Time ───
+    function updateStatusTime() {
+        const now = new Date();
+        let h = now.getHours(), m = now.getMinutes();
+        document.getElementById('statusTime').textContent = 
+            `${h > 12 ? h - 12 : h || 12}:${m.toString().padStart(2, '0')}`;
+    }
+    updateStatusTime();
+    setInterval(updateStatusTime, 30000);
+
+    // ─── Onboarding ───
+    function dismissOnboarding() {
+        document.getElementById('onboarding').classList.add('hidden');
+        setTimeout(animateDashboard, 400);
+    }
+
+    // ─── Dashboard Animations ───
+    function animateDashboard() {
+        // Animate score ring
+        const score = 87;
+        const circumference = 2 * Math.PI * 80; // ~502
+        const offset = circumference - (score / 100) * circumference;
+        document.getElementById('scoreProgress').style.strokeDashoffset = offset;
+
+        // Animate number
+        let current = 0;
+        const interval = setInterval(() => {
+            current += 2;
+            if (current >= score) {
+                current = score;
+                clearInterval(interval);
+            }
+            document.getElementById('scoreNumber').textContent = current;
+        }, 20);
+
+        // XP bar
+        setTimeout(() => {
+            document.getElementById('xpFill').style.width = '83%';
+        }, 600);
+
+        // Profile XP bar
+        setTimeout(() => {
+            document.getElementById('profileXpFill').style.width = '83%';
+        }, 600);
+    }
+
+    // ─── Screen Navigation ───
+    function switchScreen(name, tab) {
+        // Deactivate all screens
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.querySelectorAll('.tab-item').forEach(t => t.classList.remove('active'));
+
+        // Activate target
+        document.getElementById('screen-' + name).classList.add('active');
+        tab.classList.add('active');
+
+        // Trigger animations for profile XP bar when switching to profile
+        if (name === 'profile') {
+            setTimeout(() => {
+                document.getElementById('profileXpFill').style.width = '83%';
+            }, 300);
+        }
+
+        // Haptic feedback (if available)
+        if (navigator.vibrate) navigator.vibrate(10);
+    }
+
+    // ─── Protocol Toggle ───
+    function toggleProtocol(item) {
+        item.classList.toggle('completed');
+        if (navigator.vibrate) navigator.vibrate(15);
+    }
+
+    // ─── Alarm Time Adjustment ───
+    let alarmHour = 5, alarmMinute = 30;
+
+    function adjustTime(minutes) {
+        let totalMin = alarmHour * 60 + alarmMinute + minutes;
+        if (totalMin < 0) totalMin += 1440;
+        if (totalMin >= 1440) totalMin -= 1440;
+        alarmHour = Math.floor(totalMin / 60);
+        alarmMinute = totalMin % 60;
+        updateAlarmDisplay();
+        if (navigator.vibrate) navigator.vibrate(10);
+    }
+
+    function updateAlarmDisplay() {
+        let displayHour = alarmHour % 12 || 12;
+        let period = alarmHour >= 12 ? 'PM' : 'AM';
+        document.getElementById('alarmTimeDisplay').textContent = 
+            `${displayHour}:${alarmMinute.toString().padStart(2, '0')}`;
+        document.getElementById('alarmPeriod').textContent = period;
+    }
+
+    // ─── Penalty Selection ───
+    function selectPenalty(el, amount) {
+        document.querySelectorAll('.penalty-option').forEach(o => o.classList.remove('selected'));
+        el.classList.add('selected');
+        if (navigator.vibrate) navigator.vibrate(10);
+    }
+
+    // ─── Challenge Selection ───
+    function selectChallenge(el) {
+        document.querySelectorAll('.challenge-option').forEach(o => o.classList.remove('selected'));
+        el.classList.add('selected');
+        if (navigator.vibrate) navigator.vibrate(10);
+    }
+
+    // ─── Leaderboard Tabs ───
+    function selectLbTab(el) {
+        document.querySelectorAll('.lb-tab').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+    }
+
+    // ─── Save Alarm ───
+    function saveAlarm() {
+        // Update dashboard alarm card
+        let displayHour = alarmHour % 12 || 12;
+        document.querySelector('.alarm-time').textContent = 
+            `${displayHour}:${alarmMinute.toString().padStart(2, '0')}`;
+
+        // Flash confirmation
+        const btn = event.target;
+        btn.textContent = '✓ ALARM LOCKED IN';
+        btn.style.background = 'var(--accent-green)';
+        btn.style.color = 'white';
+        setTimeout(() => {
+            btn.textContent = 'LOCK IN ALARM';
+            btn.style.background = '';
+            btn.style.color = '';
+            switchScreen('dashboard', document.querySelector('.tab-item'));
+        }, 1500);
+
+        if (navigator.vibrate) navigator.vibrate([20, 50, 20]);
+    }
+
+    // ─── Alarm Overlay ───
+    let penaltySeconds = 119;
+    let penaltyInterval = null;
+    let stepInterval = null;
+
+    function showAlarmOverlay() {
+        document.getElementById('alarmOverlay').classList.add('active');
+        penaltySeconds = 119;
+        updatePenaltyTimer();
+        penaltyInterval = setInterval(() => {
+            penaltySeconds--;
+            if (penaltySeconds <= 0) {
+                clearInterval(penaltyInterval);
+                document.getElementById('penaltyTimer').textContent = '0:00';
+                document.querySelector('.penalty-countdown').innerHTML = 
+                    '<span style="color:var(--accent-red);font-size:24px;font-weight:900">$10 PENALTY CHARGED</span>';
+            }
+            updatePenaltyTimer();
+        }, 1000);
+
+        // Simulate step counting
+        let steps = 0;
+        stepInterval = setInterval(() => {
+            steps += Math.floor(Math.random() * 3);
+            if (steps > 50) steps = 50;
+            document.getElementById('stepCount').textContent = steps;
+            document.getElementById('stepBar').style.width = (steps / 50 * 100) + '%';
+            if (steps >= 50) {
+                clearInterval(stepInterval);
+                document.querySelector('.btn-alarm-dismiss').style.background = 'var(--accent-green)';
+                document.querySelector('.btn-alarm-dismiss').innerHTML = 
+                    '<i class="bi bi-check-circle-fill"></i> CHALLENGE COMPLETE — DISMISS';
+            }
+        }, 800);
+    }
+
+    function updatePenaltyTimer() {
+        let m = Math.floor(penaltySeconds / 60);
+        let s = penaltySeconds % 60;
+        document.getElementById('penaltyTimer').textContent = 
+            `${m}:${s.toString().padStart(2, '0')}`;
+    }
+
+    function dismissAlarm() {
+        clearInterval(penaltyInterval);
+        clearInterval(stepInterval);
+        document.getElementById('alarmOverlay').classList.remove('active');
+
+        // Reset step counter for next time
+        document.getElementById('stepCount').textContent = '0';
+        document.getElementById('stepBar').style.width = '0%';
+        document.querySelector('.btn-alarm-dismiss').innerHTML = 
+            '<i class="bi bi-check-circle-fill"></i> I\'M UP — DISMISS';
+    }
+
+    function snoozeAlarm() {
+        clearInterval(penaltyInterval);
+        clearInterval(stepInterval);
+
+        const btn = document.querySelector('.btn-alarm-snooze');
+        btn.innerHTML = '💸 $10 CHARGED — SNOOZING...';
+        btn.style.borderColor = 'var(--accent-red)';
+        btn.style.background = 'rgba(255,45,85,0.2)';
+
+        setTimeout(() => {
+            document.getElementById('alarmOverlay').classList.remove('active');
+            btn.innerHTML = 'Snooze — Pay $10 Penalty';
+            btn.style.borderColor = '';
+            btn.style.background = '';
+            document.getElementById('stepCount').textContent = '0';
+            document.getElementById('stepBar').style.width = '0%';
+        }, 2000);
+    }
+
+    // ─── Toggle Switches (generic) ───
+    document.querySelectorAll('.toggle-switch').forEach(toggle => {
+        toggle.addEventListener('click', function(e) {
+            // Already handled by onclick for specific ones, 
+            // this is for generic toggles
+        });
+    });
+</script>
+</body>
+</html>
