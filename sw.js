@@ -1,7 +1,8 @@
-const CACHE_NAME = 'rise-v1';
+const CACHE_NAME = 'rise-v2';
 const urlsToCache = [
   '/',
   '/index.html',
+  '/app.js',
   '/manifest.json',
   '/icon-192.png',
   '/icon-512.png'
@@ -17,8 +18,7 @@ self.addEventListener('install', event => {
 
 self.addEventListener('fetch', event => {
   event.respondWith(
-    caches.match(event.request)
-      .then(response => response || fetch(event.request))
+    fetch(event.request).catch(() => caches.match(event.request))
   );
 });
 
